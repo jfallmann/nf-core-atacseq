@@ -543,6 +543,20 @@
                     "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
                     "hidden": true
                 },
+                "minFragmentLength": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Minimum fragment length to select for DEEPTOOLS ALIGNMENT-SIEVE.",
+                    "fa_icon": "fas fa-dumpster",
+                    "hidden": true
+                },
+                "maxFragmentLength": {
+                    "type": "integer",
+                    "default": 120,
+                    "description": "Maximum fragment length to select for DEEPTOOLS ALIGNMENT-SIEVE.",
+                    "fa_icon": "fas fa-dumpster",
+                    "hidden": true
+                },
                 "fingerprint_bins": {
                     "type": "integer",
                     "default": 500000,
