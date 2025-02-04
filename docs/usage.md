@@ -269,7 +269,7 @@ Some HPC setups also allow you to run nextflow within a cluster job submitted yo
 
 ## Custom parameters
 
-### aligned reads filtering 
+### aligned reads filtering
 
 After the alignment using specified aligner, we would like to further clean up and filter the alignments by posing thresholds upon fragment sizes with the `deepTools-alignmentSieve`. You could specify below parameters in your `-params-file`:
 
@@ -278,13 +278,13 @@ After the alignment using specified aligner, we would like to further clean up a
 
 for filtering fragments based on its size.
 
-The suggested default length range is meant to select **nucleosome-free regions**, because the length of DNA wrapping around a nucleosome is mostly assumed around 147bp. 
+The suggested default length range is meant to select **nucleosome-free regions**, because the length of DNA wrapping around a nucleosome is mostly assumed around 147bp.
 
 If different user cases are considered for your research, we suggest the following settings:
 
-- Mononucleosome regions: minFragmentLength,maxFragmentLength  (180, 247)
-- Dinucleosome regions: minFragmentLength,maxFragmentLength  (315, 473)
-- Trinucleosome regions: minFragmentLength,maxFragmentLength  (558, 615)
+- Mononucleosome regions: minFragmentLength,maxFragmentLength (180, 247)
+- Dinucleosome regions: minFragmentLength,maxFragmentLength (315, 473)
+- Trinucleosome regions: minFragmentLength,maxFragmentLength (558, 615)
 
 ## Nextflow memory requirements
 
