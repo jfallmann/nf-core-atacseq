@@ -267,6 +267,25 @@ The Nextflow `-bg` flag launches Nextflow in the background, detached from your 
 Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
 Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
 
+## Custom parameters
+
+### aligned reads filtering
+
+After the alignment using specified aligner, we would like to further clean up and filter the alignments by posing thresholds upon fragment sizes with the `deepTools-alignmentSieve`. You could specify below parameters in your `-params-file`:
+
+- minFragmentLength (default 0)
+- maxFragmentLength (default 120)
+
+for filtering fragments based on its size.
+
+The suggested default length range is meant to select **nucleosome-free regions**, because the length of DNA wrapping around a nucleosome is mostly assumed around 147bp.
+
+If different user cases are considered for your research, we suggest the following settings:
+
+- Mononucleosome regions: minFragmentLength,maxFragmentLength (180, 247)
+- Dinucleosome regions: minFragmentLength,maxFragmentLength (315, 473)
+- Trinucleosome regions: minFragmentLength,maxFragmentLength (558, 615)
+
 ## Nextflow memory requirements
 
 In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
