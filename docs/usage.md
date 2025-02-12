@@ -4,60 +4,122 @@
 
 > _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
 
-## Introduction
-
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
-
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+Before running the pipeline, create a samplesheet with information about the samples you would like to analyse. This samplesheet contains the files that will be passed as inputs to the pipeline. The --input parameter is used to specify the samplesheet location. It has to be a comma-separated file with 4 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
+### Multiple replicates
+
+The `sample` identifier is the same when you have multiple biological replicates from the same experimental group, just increment the `replicate` identifier appropriately. The first replicate value for any given experimental group must be 1. Below is an example for the analysis of paired-end sequencing of ATAC-seq experiment performed in triplicate for the cell line "A" :
+
+```console
+sample,fastq_1,fastq_2,replicate
+SAMPLE_A,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,1
+SAMPLE_A,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz,2
+SAMPLE_A,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz,3
+```
+
+The pipeline will automatically append the `&_REP<BIOLOGICAL_REPLICATE_NUMBER>` suffix to the sample name within the pipeline e.g. `SAMPLE_A_REP1`, `SAMPLE_A_REP2` and `SAMPLE_A_REP3` using the example above. If you don't have replicates you can set the `replicate` value to 1 for all of your samples. Below an example for the analysis of of paired-end sequencing of ATAC-seq experiment performed without replicates for the cell line "A" and for the tissue "B":
+
+```console
+sample,fastq_1,fastq_2,replicate
+SAMPLE_A,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,1
+SAMPLE_B,BEG599B2_S1_L003_R1_001.fastq.gz,BEG599B2_S1_L003_R2_001.fastq.gz,1
+```
+
 ### Multiple runs of the same sample
 
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+The `sample` and `replicate` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will perform the alignments in parallel, and subsequently merge them before further analysis. Below is an example of how the samplesheet for SAMPLE_A would look like if sequenced across 3 lanes:
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+sample,fastq_1,fastq_2,replicate
+SAMPLE_A,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,1
+SAMPLE_A,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz,1
+SAMPLE_A,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz,1
 ```
+
+The pipeline will automatically append the `*_T<TECHNICAL_REPLICATE_NUMBER>` suffix to the sample name within the pipeline e.g. `SAMPLE_A_REP1_T1`, `SAMPLE_A_REP1_T2` and `SAMPLE_A_REP1_T3` using the example above.
+
+### INPUT control data
+
+An input control is a file that can be used during peak calling to estimate the background of the experiment. If input controls sequencing information is available, it can be used for peak calling using the parameter `--with_control`. In this case, the samplesheet file needs the additional columns `control` and `control_replicate`. These should be the sample identifier and sample replicate for the input controls, as in the example below.
 
 ### Full samplesheet
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 4 columns to match those defined in the table below.
 
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 7 samples, where we have biological triplicates for both the control condition, such as cell line "A" untreated, `UNTREATED_A` and the treatment condition, such as cell line "A" treated with a compound, `TREATED_A` groups, and the third replicate in the `TREATED_A` group has been a technical replicate as a result of being sequenced twice. In this example, INPUT control is available `INPUT_A` with no replicates.
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+sample,fastq_1,fastq_2,replicate,control,control_replicate
+INPUT_A,IEG577I1_S1_L001_R1_001.fastq.gz,IEG577I1_S1_L002_R2_001.fastq.gz,1,,
+UNTREATED_A,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz,1,INPUT_A,1
+UNTREATED_A,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz,2,INPUT_A,1
+UNTREATED_A,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz,3,INPUT_A,1
+TREATED_A,AEG588A4_S4_L003_R1_001.fastq.gz,,1,INPUT_A,1
+TREATED_A,AEG588A5_S5_L003_R1_001.fastq.gz,,2,INPUT_A,1
+TREATED_A,AEG588A6_S6_L003_R1_001.fastq.gz,,3,INPUT_A,1
+TREATED_A,AEG588A6_S6_L004_R1_001.fastq.gz,,3,INPUT_A,1
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column              | Description                                                                                                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`            | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1`           | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_2`           | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `replicate`         | Integer representing replicate number. This will be identical for re-sequenced libraries. Must start from `1..<number of replicates>`.                                                 |
+| `control`           | Sample name for control sample.                                                                                                                                                        |
+| `control_replicate` | Integer representing replicate number of the control sample                                                                                                                            |
 
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+Example sheets [without controls](../assets/samplesheet.csv) and [with controls](../assets/samplesheet_with_control.csv) have been provided with the pipeline.
+
+## Reference genome files
+
+The minimum reference genome requirements are a FASTA and GTF file, all other files required to run the pipeline can be generated from these files. However, it is more storage and compute friendly if you are able to re-use reference genome files as efficiently as possible. It is recommended to use the `--save_reference` parameter if you are using the pipeline to build new indices (e.g. those unavailable on [AWS iGenomes](https://nf-co.re/usage/reference_genomes)) so that you can save them somewhere locally. The index building step can be quite a time-consuming process and it permits their reuse for future runs of the pipeline to save disk space. You can then either provide the appropriate reference genome files on the command-line via the appropriate parameters (e.g. `--bwa_index '/path/to/bwa/index/'`) or via a custom config file.
+
+- If `--genome` is provided then the FASTA and GTF files (and existing indices) will be automatically obtained from AWS-iGenomes unless these have already been downloaded locally in the path specified by `--igenomes_base`.
+- If `--gene_bed` is not provided then it will be generated from the GTF file.
+
+> **NB:** Compressed reference files are also supported by the pipeline i.e. standard files with the `.gz` extension and indices folders with the `tar.gz` extension.
+
+## Blacklist bed files
+
+The blacklist bed files where obtained using the commands below:
+
+```console
+cd ..
+mkdir -p v1.0
+cd v1.0
+wget -L https://www.encodeproject.org/files/ENCFF001TDO/@@download/ENCFF001TDO.bed.gz && gunzip ENCFF001TDO.bed.gz && mv ENCFF001TDO.bed hg19-blacklist.v1.bed
+
+mkdir -p assets/blacklists/v2.0/
+cd assets/blacklists/v2.0/
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/ce10-blacklist.v2.bed.gz && gunzip ce10-blacklist.v2.bed.gz
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/ce11-blacklist.v2.bed.gz && gunzip ce11-blacklist.v2.bed.gz
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/dm3-blacklist.v2.bed.gz && gunzip dm3-blacklist.v2.bed.gz
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/dm6-blacklist.v2.bed.gz && gunzip dm6-blacklist.v2.bed.gz
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/hg19-blacklist.v2.bed.gz && gunzip hg19-blacklist.v2.bed.gz
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/hg38-blacklist.v2.bed.gz && gunzip hg38-blacklist.v2.bed.gz
+wget -L https://raw.githubusercontent.com/Boyle-Lab/Blacklist/master/lists/mm10-blacklist.v2.bed.gz && gunzip mm10-blacklist.v2.bed.gz
+
+cd ..
+mkdir -p v3.0
+cd v3.0
+wget -L https://www.encodeproject.org/files/ENCFF356LFX/@@download/ENCFF356LFX.bed.gz && gunzip ENCFF356LFX.bed.gz && mv ENCFF356LFX.bed hg38-blacklist.v3.bed
+```
+
+> **NB:** A detailed description of the different versions of the files can be found [here](https://sites.google.com/site/anshulkundaje/projects/blacklists). Also, to to see which blacklist bed files are assigned by default to the respective reference genome check the [igenomes.config](https://github.com/nf-core/chipseq/blob/master/conf/igenomes.config).
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/atacseq --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run nf-core/atacseq --input ./samplesheet.csv --outdir ./results --genome GRCh37 --read_length 150  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -90,6 +152,7 @@ with:
 input: './samplesheet.csv'
 outdir: './results/'
 genome: 'GRCh37'
+read_length: 150
 <...>
 ```
 

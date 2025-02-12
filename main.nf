@@ -11,25 +11,33 @@
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-include { ATACSEQ  } from './workflows/atacseq'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_atacseq_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_atacseq_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_atacseq_pipeline'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     GENOME PARAMETER VALUES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
+params.fasta         = getGenomeAttribute('fasta')
+params.bwa_index     = getGenomeAttribute('bwa')
+params.bowtie2_index = getGenomeAttribute('bowtie2')
+params.chromap_index = getGenomeAttribute('chromap')
+params.star_index    = getGenomeAttribute('star')
+params.gtf           = getGenomeAttribute('gtf')
+params.gff           = getGenomeAttribute('gff')
+params.gene_bed      = getGenomeAttribute('gene_bed')
+params.tss_bed       = getGenomeAttribute('tss_bed')
+params.blacklist     = getGenomeAttribute('blacklist')
+params.mito_name     = getGenomeAttribute('mito_name')
+params.macs_gsize    = getMacsGsize(params)
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+include { ATACSEQ                 } from './workflows/atacseq'
+include { PREPARE_GENOME          } from './subworkflows/local/prepare_genome'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_atacseq_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_atacseq_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,24 +46,62 @@ params.fasta = getGenomeAttribute('fasta')
 */
 
 //
-// WORKFLOW: Run main analysis pipeline depending on type of input
+// WORKFLOW: Run main analysis pipeline
 //
 workflow NFCORE_ATACSEQ {
 
-    take:
-    samplesheet // channel: samplesheet read in from --input
-
     main:
+    ch_versions = Channel.empty()
+
+    // SUBWORKFLOW: Prepare genome files
+    PREPARE_GENOME (
+        params.genome,
+        params.genomes,
+        params.aligner,
+        params.fasta,
+        params.gtf,
+        params.gff,
+        params.blacklist,
+        params.gene_bed,
+        params.tss_bed,
+        params.mito_name,
+        params.keep_mito,
+        params.bwa_index,
+        params.bowtie2_index,
+        params.chromap_index,
+        params.star_index,
+        params.macs_gsize,
+        params.read_length
+    )
+    ch_versions = ch_versions.mix(PREPARE_GENOME.out.versions)
 
     //
-    // WORKFLOW: Run pipeline
+    // WORKFLOW: Run nf-core/atacseq workflow
     //
+    ch_samplesheet = Channel.value(file(params.input, checkIfExists: true))
+
     ATACSEQ (
-        samplesheet
+        ch_samplesheet,
+        ch_versions,
+        PREPARE_GENOME.out.fasta,
+        PREPARE_GENOME.out.fai,
+        PREPARE_GENOME.out.gtf,
+        PREPARE_GENOME.out.gene_bed,
+        PREPARE_GENOME.out.tss_bed,
+        PREPARE_GENOME.out.chrom_sizes,
+        PREPARE_GENOME.out.filtered_bed,
+        PREPARE_GENOME.out.bwa_index,
+        PREPARE_GENOME.out.bowtie2_index,
+        PREPARE_GENOME.out.chromap_index,
+        PREPARE_GENOME.out.star_index,
+        PREPARE_GENOME.out.autosomes,
+        PREPARE_GENOME.out.macs_gsize
     )
     emit:
     multiqc_report = ATACSEQ.out.multiqc_report // channel: /path/to/multiqc_report.html
+    versions       = ch_versions                // channel: [version1, version2, ...]
 }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -73,16 +119,14 @@ workflow {
         params.validate_params,
         params.monochrome_logs,
         args,
-        params.outdir,
-        params.input
+        params.outdir
     )
 
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_ATACSEQ (
-        PIPELINE_INITIALISATION.out.samplesheet
-    )
+    NFCORE_ATACSEQ ()
+
     //
     // SUBWORKFLOW: Run completion tasks
     //
@@ -95,6 +139,37 @@ workflow {
         params.hook_url,
         NFCORE_ATACSEQ.out.multiqc_report
     )
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+//
+// Get attribute from genome config file e.g. fasta
+//
+
+def getGenomeAttribute(attribute) {
+    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
+        if (params.genomes[ params.genome ].containsKey(attribute)) {
+            return params.genomes[ params.genome ][ attribute ]
+        }
+    }
+    return null
+}
+
+def getMacsGsize(params) {
+    def val = null
+    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
+        if (params.genomes[ params.genome ].containsKey('macs_gsize')) {
+            if (params.genomes[ params.genome ][ 'macs_gsize' ].containsKey(params.read_length.toString())) {
+                val = params.genomes[ params.genome ][ 'macs_gsize' ][ params.read_length.toString() ]
+            }
+        }
+    }
+    return val
 }
 
 /*
