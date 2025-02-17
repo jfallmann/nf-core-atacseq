@@ -1,6 +1,5 @@
 include { SAMTOOLS_SORT           } from '../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX          } from '../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_INDEX_SORTED          } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX; SAMTOOLS_INDEX as SAMTOOLS_INDEX_SORTED         } from '../../modules/nf-core/samtools/index/main'
 include { BAM_SORT_STATS_SAMTOOLS } from '../nf-core/bam_sort_stats_samtools/main'
 include { BAM_STATS_SAMTOOLS      } from '../nf-core/bam_stats_samtools/main'
 
