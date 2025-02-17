@@ -3,10 +3,10 @@ process STAR_ALIGN {
     label 'process_high'
 
     // Note: 2.7X indices incompatible with AWS iGenomes.
-    conda "bioconda::star=2.6.1d"
+    conda "bioconda::star=2.7.11b"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/star:2.6.1d--0' :
-        'biocontainers/star:2.6.1d--0' }"
+        'https://depot.galaxyproject.org/singularity/star:2.7.11b--h5ca1c30_5' :
+        'biocontainers/star:2.7.11b--h5ca1c30_5' }"
 
     input:
     tuple val(meta), path(reads)
