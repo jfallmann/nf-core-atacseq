@@ -39,6 +39,7 @@ process STAR_ALIGN {
     STAR \\
         --genomeDir $index \\
         --readFilesIn $reads  \\
+        --readFilesCommand zcat \\
         --runThreadN $task.cpus \\
         --outFileNamePrefix $prefix. \\
         $out_sam_type \\
