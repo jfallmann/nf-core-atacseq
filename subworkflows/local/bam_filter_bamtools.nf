@@ -1,5 +1,6 @@
 include { SAMTOOLS_SORT           } from '../../modules/nf-core/samtools/sort/main'
 include { SAMTOOLS_INDEX          } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX_SORTED          } from '../../modules/nf-core/samtools/index/main'
 include { BAM_SORT_STATS_SAMTOOLS } from '../nf-core/bam_sort_stats_samtools/main'
 include { BAM_STATS_SAMTOOLS      } from '../nf-core/bam_stats_samtools/main'
 
@@ -67,10 +68,18 @@ workflow BAM_FILTER_BAMTOOLS {
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
 
     //
+    // Index sorted PE BAM before filtering with pysam
+    //
+    SAMTOOLS_INDEX_SORTED (
+        SAMTOOLS_SORT.out.bam
+    )
+    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
+
+    //
     // Remove orphan reads from PE BAM file
     //
     BAM_REMOVE_ORPHANS (
-        SAMTOOLS_SORT.out.bam
+        SAMTOOLS_SORT.out.bam, SAMTOOLS_INDEX_SORTED.out.bai
     )
     ch_versions = ch_versions.mix(BAM_REMOVE_ORPHANS.out.versions.first())
 
