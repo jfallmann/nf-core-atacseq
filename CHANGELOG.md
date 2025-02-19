@@ -3,6 +3,41 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.0dev - [date]
+
+### Enhancements & fixes
+
+- [[#164]](https://github.com/nf-core/atacseq/issues/164) and partly [[#91]](https://github.com/nf-core/atacseq/issues/91) with code from [[#301]](https://github.com/nf-core/atacseq/pull/301) to address shifting of reads as an option that is turned off by default.
+- [[#327](https://github.com/nf-core/atacseq/issues/327)] - Consistently support `.csi` indices as alternative to `.bai` to allow SAMTOOLS_INDEX to be used with the `-c` flag.
+- [[#356](https://github.com/nf-core/atacseq/issues/356)] - Get rid of the `lib` folder and rearrange the pipeline accordingly.
+- [[#379](https://github.com/nf-core/atacseq/pull/356)] - Use macs3 instead of macs2.
+- Updated pipeline template to [nf-core/tools 2.14.1](https://github.com/nf-core/tools/releases/tag/2.14.1)
+- [[#359](https://github.com/nf-core/atacseq/issues/359)] - Fix `--save_unaligned` description in schema.
+- [[#344](https://github.com/nf-core/atacseq/issues/344)] - Fix memory issues when sorting merged replicates after `bedtools genomecov`.
+- [[#338](https://github.com/nf-core/atacseq/issues/338)] - Check that samplesheet samples IDs do only have alphanumeric characters, dots, dashes or underscores.
+- [[#370](https://github.com/nf-core/atacseq/issues/370)] - Adding line numbers to errors messages in `bin/check_samplesheet.py`.
+- [[#381](https://github.com/nf-core/atacseq/issues/381)] - Set chromap to no shift reads by default and install `deeptools/alignmentsieve` from modules.
+- Updated pipeline template to [nf-core/tools 3.1.1](https://github.com/nf-core/tools/releases/tag/3.1.1)
+
+### Parameters
+
+| Old parameter | New parameter                    |
+| ------------- | -------------------------------- |
+|               | `--skip_merged_replicate_bigwig` |
+
+> **NB:** Parameter has been **updated** if both old and new parameter information is present.
+> **NB:** Parameter has been **added** if just the new parameter information is present.
+> **NB:** Parameter has been **removed** if parameter information isn't present.
+
+### Software dependencies
+
+Note, since the pipeline is now using Nextflow DSL2, each process will be run with its own [Biocontainer](https://biocontainers.pro/#/registry). This means that on occasion it is entirely possible for the pipeline to be using different versions of the same tool. However, the overall software dependency changes compared to the last release have been listed below for reference.
+
+| Dependency | Old version | New version |
+| ---------- | ----------- | ----------- |
+| `macs2`    | 2.2.7.1     |             |
+| `macs3`    |             | 3.0.1       |
+
 ## [[2.1.2](https://github.com/nf-core/atacseq/releases/tag/2.1.2)] - 2022-08-07
 
 ### Enhancements & fixes
