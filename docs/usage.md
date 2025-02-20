@@ -114,6 +114,23 @@ wget -L https://www.encodeproject.org/files/ENCFF356LFX/@@download/ENCFF356LFX.b
 
 > **NB:** A detailed description of the different versions of the files can be found [here](https://sites.google.com/site/anshulkundaje/projects/blacklists). Also, to to see which blacklist bed files are assigned by default to the respective reference genome check the [igenomes.config](https://github.com/nf-core/chipseq/blob/master/conf/igenomes.config).
 
+## Aligned reads filtering
+
+After the alignment using specified aligner, we would like to further clean up and filter the alignments by posing thresholds upon fragment sizes with the `deepTools-alignmentSieve`. You could specify below parameters in your `-params-file`:
+
+- minFragmentLength (default 0)
+- maxFragmentLength (default 120)
+
+for filtering fragments based on its size.
+
+The suggested default length range is meant to select **nucleosome-free regions**, because the length of DNA wrapping around a nucleosome is mostly assumed around 147bp.
+
+If different user cases are considered for your research, we suggest the following settings:
+
+- Mononucleosome regions: minFragmentLength,maxFragmentLength (180, 247)
+- Dinucleosome regions: minFragmentLength,maxFragmentLength (315, 473)
+- Trinucleosome regions: minFragmentLength,maxFragmentLength (558, 615)
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
@@ -268,23 +285,6 @@ Alternatively, you can use `screen` / `tmux` or similar tool to create a detache
 Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
 
 ## Custom parameters
-
-### aligned reads filtering
-
-After the alignment using specified aligner, we would like to further clean up and filter the alignments by posing thresholds upon fragment sizes with the `deepTools-alignmentSieve`. You could specify below parameters in your `-params-file`:
-
-- minFragmentLength (default 0)
-- maxFragmentLength (default 120)
-
-for filtering fragments based on its size.
-
-The suggested default length range is meant to select **nucleosome-free regions**, because the length of DNA wrapping around a nucleosome is mostly assumed around 147bp.
-
-If different user cases are considered for your research, we suggest the following settings:
-
-- Mononucleosome regions: minFragmentLength,maxFragmentLength (180, 247)
-- Dinucleosome regions: minFragmentLength,maxFragmentLength (315, 473)
-- Trinucleosome regions: minFragmentLength,maxFragmentLength (558, 615)
 
 ## Nextflow memory requirements
 
