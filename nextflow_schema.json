@@ -338,15 +338,13 @@
                     "type": "integer",
                     "default": 0,
                     "description": "Minimum fragment length to select for DEEPTOOLS ALIGNMENT-SIEVE.",
-                    "fa_icon": "fas fa-dumpster",
-                    "hidden": true
+                    "fa_icon": "fas fa-dumpster"
                 },
                 "maxFragmentLength": {
                     "type": "integer",
                     "default": 120,
                     "description": "Maximum fragment length to select for DEEPTOOLS ALIGNMENT-SIEVE.",
-                    "fa_icon": "fas fa-dumpster",
-                    "hidden": true
+                    "fa_icon": "fas fa-dumpster"
                 }
             }
         },
