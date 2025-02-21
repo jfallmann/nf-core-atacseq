@@ -36,19 +36,19 @@ process STAR_ALIGN {
     def out_sam_type = (args.contains('--outSAMtype')) ? '' : '--outSAMtype BAM Unsorted'
     def mv_unsorted_bam = (args.contains('--outSAMtype BAM Unsorted SortedByCoordinate')) ? "mv ${prefix}.Aligned.out.bam ${prefix}.Aligned.unsort.out.bam" : ''
     def xtra = [
-        args,        
+        args,
         out_sam_type,
         seq_center_tag
     ].join(' ').trim()
     """
     STAR \\
-        --genomeDir $index \\        
+        --genomeDir ${index} \\
         --readFilesCommand zcat \\
-        --readFilesIn $reads \\
-        --runThreadN $task.cpus \\
-        --outFileNamePrefix $prefix. \\        
-        $xtra        
-        
+        --readFilesIn ${reads} \\
+        --runThreadN ${task.cpus} \\
+        --outFileNamePrefix ${prefix}. \\
+        ${xtra}
+
     $mv_unsorted_bam
     if [ -f ${prefix}.Unmapped.out.mate1 ]; then
         mv ${prefix}.Unmapped.out.mate1 ${prefix}.unmapped_1.fastq
