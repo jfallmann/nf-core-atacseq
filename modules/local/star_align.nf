@@ -37,14 +37,15 @@ process STAR_ALIGN {
     def mv_unsorted_bam = (args.contains('--outSAMtype BAM Unsorted SortedByCoordinate')) ? "mv ${prefix}.Aligned.out.bam ${prefix}.Aligned.unsort.out.bam" : ''
     """
     STAR \\
-        $args \\
-        $mv_unsorted_bam \\
-        $out_sam_type \\
-        $seq_center_tag \\        
         --genomeDir $index \\        
         --runThreadN $task.cpus \\
         --outFileNamePrefix $prefix.\\
-        --readFilesIn $reads
+        --readFilesIn $reads \\
+        $args \\
+        $mv_unsorted_bam \\
+        $out_sam_type \\
+        $seq_center_tag 
+        
         
     if [ -f ${prefix}.Unmapped.out.mate1 ]; then
         mv ${prefix}.Unmapped.out.mate1 ${prefix}.unmapped_1.fastq
