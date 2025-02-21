@@ -35,18 +35,20 @@ process STAR_ALIGN {
     def seq_center_tag = seq_center ? "--outSAMattrRGline ID:$prefix 'CN:$seq_center' 'SM:$prefix'" : "--outSAMattrRGline ID:$prefix 'SM:$prefix'"
     def out_sam_type = (args.contains('--outSAMtype')) ? '' : '--outSAMtype BAM Unsorted'
     def mv_unsorted_bam = (args.contains('--outSAMtype BAM Unsorted SortedByCoordinate')) ? "mv ${prefix}.Aligned.out.bam ${prefix}.Aligned.unsort.out.bam" : ''
+    def xtra = [
+        $args,
+        $mv_unsorted_bam,
+        $out_sam_type,
+        $seq_center_tag
+    ].join(' ').trim()
     """
     STAR \\
         --genomeDir $index \\        
-        --runThreadN $task.cpus \\
-        --outFileNamePrefix $prefix.\\
         --readFilesCommand zcat \\
         --readFilesIn $reads \\
-        $args \\
-        $mv_unsorted_bam \\
-        $out_sam_type \\
-        $seq_center_tag 
-        
+        --runThreadN $task.cpus \\
+        --outFileNamePrefix $prefix.\\        
+        $xtra        
         
     if [ -f ${prefix}.Unmapped.out.mate1 ]; then
         mv ${prefix}.Unmapped.out.mate1 ${prefix}.unmapped_1.fastq
