@@ -36,8 +36,7 @@ process STAR_ALIGN {
     def out_sam_type = (args.contains('--outSAMtype')) ? '' : '--outSAMtype BAM Unsorted'
     def mv_unsorted_bam = (args.contains('--outSAMtype BAM Unsorted SortedByCoordinate')) ? "mv ${prefix}.Aligned.out.bam ${prefix}.Aligned.unsort.out.bam" : ''
     def xtra = [
-        args,
-        mv_unsorted_bam,
+        args,        
         out_sam_type,
         seq_center_tag
     ].join(' ').trim()
@@ -50,6 +49,7 @@ process STAR_ALIGN {
         --outFileNamePrefix $prefix.\\        
         $xtra        
         
+    $mv_unsorted_bam
     if [ -f ${prefix}.Unmapped.out.mate1 ]; then
         mv ${prefix}.Unmapped.out.mate1 ${prefix}.unmapped_1.fastq
         gzip ${prefix}.unmapped_1.fastq
