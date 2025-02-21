@@ -46,7 +46,7 @@ process STAR_ALIGN {
         --readFilesCommand zcat \\
         --readFilesIn $reads \\
         --runThreadN $task.cpus \\
-        --outFileNamePrefix $prefix.\\        
+        --outFileNamePrefix $prefix. \\        
         $xtra        
         
     $mv_unsorted_bam
