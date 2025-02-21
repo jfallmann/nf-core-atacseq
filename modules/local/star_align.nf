@@ -40,6 +40,7 @@ process STAR_ALIGN {
         --genomeDir $index \\        
         --runThreadN $task.cpus \\
         --outFileNamePrefix $prefix.\\
+        --readFilesCommand zcat \\
         --readFilesIn $reads \\
         $args \\
         $mv_unsorted_bam \\
