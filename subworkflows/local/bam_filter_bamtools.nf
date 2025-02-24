@@ -91,7 +91,7 @@ workflow BAM_FILTER_BAMTOOLS {
     // Remove orphan reads from PE BAM file
     //
     BAM_REMOVE_ORPHANS (
-        SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX_SORTED.out.bai)
+        SAMTOOLS_SORT.out.bam //.join(SAMTOOLS_INDEX_SORTED.out.bai)
     )
     ch_versions = ch_versions.mix(BAM_REMOVE_ORPHANS.out.versions.first())
 
