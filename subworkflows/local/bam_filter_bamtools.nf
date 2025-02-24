@@ -1,5 +1,5 @@
 include { SAMTOOLS_SORT           } from '../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX; SAMTOOLS_INDEX as SAMTOOLS_INDEX_SORTED         } from '../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX         } from '../../modules/nf-core/samtools/index/main'
 include { BAM_SORT_STATS_SAMTOOLS } from '../nf-core/bam_sort_stats_samtools/main'
 include { BAM_STATS_SAMTOOLS      } from '../nf-core/bam_stats_samtools/main'
 
@@ -76,14 +76,6 @@ workflow BAM_FILTER_BAMTOOLS {
     SAMTOOLS_SORT (
         ch_bam.paired_end,
         ch_fasta
-    )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
-
-    //
-    // Index sorted PE BAM before filtering with pysam
-    //
-    SAMTOOLS_INDEX_SORTED (
-        SAMTOOLS_SORT.out.bam
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
 
